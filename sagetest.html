@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.0px Arial; color: #1a1a1a; -webkit-text-stroke: #1a1a1a; background-color: #ffffff}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.0px Arial; color: #1a1a1a; -webkit-text-stroke: #1a1a1a; background-color: #ffffff; min-height: 11.0px}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE HTML&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta charset="utf-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;SageMathCell&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://sagecell.sagemath.org/static/embedded_sagecell.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Make the div with id 'mycell' a Sage cell</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>sagecell.makeSagecell({inputLocation:<span class="Apple-converted-space">  </span>'#mycell',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>template: <span class="Apple-converted-space">      </span>sagecell.templates.minimal,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>evalButtonText: 'Activate'});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>// Make *any* div with class 'compute' a Sage cell</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>sagecell.makeSagecell({inputLocation: 'div.compute',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                           </span>evalButtonText: 'Evaluate'});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;body&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;h1&gt;Embedded Sage Cells&lt;/h1&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;h2&gt;Factorial&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>Click the &amp;ldquo;Activate&amp;rdquo; button below to calculate factorials.</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="mycell"&gt;&lt;script type="text/x-sage"&gt;</span></p>
+<p class="p1"><span class="s1">@interact</span></p>
+<p class="p1"><span class="s1">def _(a=(1, 10)):</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>print(factorial(a))</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space"> </span>&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;h2&gt;Your own computations&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1">Type your own Sage computation below and click &amp;ldquo;Evaluate&amp;rdquo;.</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="compute"&gt;&lt;script type="text/x-sage"&gt;plot(sin(x), (x, 0, 2*pi))&lt;/script&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div class="compute"&gt;&lt;script type="text/x-sage"&gt;</span></p>
+<p class="p1"><span class="s1">@interact</span></p>
+<p class="p1"><span class="s1">def f(n=(0,10)):</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>print(2^n)</span></p>
+<p class="p1"><span class="s1">&lt;/script&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
