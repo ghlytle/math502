@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exploring Condition Number</title>
+
+<!-- KaTeX: small, deferred, renders math from LaTeX source in the browser -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+
+<style>
+  :root { --bg:#fff; --fg:#212121; --muted:#666; --accent:#226e93; --code-bg:#f4f4f4; --border:#ddd; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#16181a; --fg:#e6e6e6; --muted:#9aa; --accent:#6bb7dc; --code-bg:#23272b; --border:#3a3f44; }
+  }
+  html { box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font:16px/1.65 Lato, system-ui, sans-serif;
+         max-width:860px; margin:0 auto; padding:1.5rem 1rem 4rem; }
+  h1,h2,h3 { color:var(--accent); font-weight:400; line-height:1.25; }
+  h1 { font-size:2rem; } h2 { margin-top:2.2rem; } h3 { margin-top:1.6rem; }
+  .sage { margin:1rem 0; }
+  pre.ph { background:var(--code-bg); border:1px solid var(--border); border-radius:4px;
+           padding:.7rem; overflow-x:auto; font-size:.85rem; margin:1rem 0; }
+  .note { color:var(--muted); font-size:.9rem; }
+  .katex-display { overflow-x:auto; overflow-y:hidden; }
+  /* SageCell output inherits page colours poorly in dark mode; keep its box light */
+  .sagecell { background:#fff; color:#212121; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<h1>Exploring Condition Number</h1>
+<p class="note">Code cells are live (Octave). They load automatically as you scroll to them; run them in order, since they share one session.</p>
+
+<p>The process of using computers to solve mathematical problems lies in the subject of Numerical Analysis. There is a lot of overlap and interdisciplinary work between numerical analysis and computer science. But there are some key differences. Computer science, for example, is concerned with the development of algorithms to optimize the performance and memory usage of a computer. While these are important considerations, numerical analysis is also concerned with creating algorithms that maintain accuracy and are numerically stable.</p>
+
+<h2>Absolute Error and Relative Error</h2>
+<p>When we examine errors in any sort of approximation, there are two general frameworks for the error. Let's suppose we are approximating the true value $y$ with the approximation $\hat{y}$.</p>
+<ul>
+  <li>The <strong>absolute error</strong> is the absolute value of the difference: $|y - \hat{y}|$.</li>
+  <li>The <strong>relative error</strong> measures the error compared to the true value (also known as percent-error): $\dfrac{|y-\hat{y}|}{|y|}$</li>
+</ul>
+
+<h3>Task 1</h3>
+<p>Let's examine errors a little more clearly.</p>
+<ol>
+  <li>Find the absolute error between $y = 0.325$ and $\hat{y} = 0.425$.</li>
+  <li>Find the absolute error between $z = 200.653$ and $\hat{z} = 200.762$.</li>
+  <li>Find the relative errors of the approximations in the previous problems.</li>
+</ol>
+
+<p>Note that the absolute error was the same in both cases, but the relative errors are distinct. We see that the same absolute error means more depending on the scale of the problem you're considering. An absolute error of 0.3 is a big deal when you're thinking about numbers closer to 0.01, but it's meaningless for numbers close to 100.</p>
+
+<h2>How Big is a Vector?</h2>
+<p>When we consider the matrix equation $Ax = b$, we can implement our elimination strategies in a systematic fashion. The algorithm allows us to generate an approximate solution to the problem, which we can call $\hat{x}$.</p>
+<p>A natural question to ask is: "How can I talk about absolute and relative error when there are vectors instead of numbers?" The solution to this quandary is a <em>norm</em>.</p>
+<ul>
+  <li>A <strong>norm</strong> is a function that takes in a vector and assigns to it a nonnegative number that gives an indication of its size.</li>
+</ul>
+<p>There are lots of different norms, but there are three common ones. Let
+$\vec{x} = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix}$.</p>
+
+<p><strong>The Euclidean Norm</strong> or 2-norm corresponds to the length of the vector as measured by a ruler.
+$$\|\vec{x}\|_2 = \left(x_1^2 + x_2^2 + \dots + x_n^2\right)^{1/2}$$</p>
+
+<p><strong>The 1-Norm</strong> is based on the sum of the absolute values of the entries.
+$$\|\vec{x}\|_1 = |x_1| + |x_2| + \dots + |x_n|$$</p>
+
+<p><strong>The Infinity Norm</strong> returns the largest entry of the vector (based on absolute value).
+$$\|\vec{x}\|_\infty = \max_{1 \leq i \leq n} |x_i|$$</p>
+
+<h3>Task 2</h3>
+<p>Consider the vector
+$$\vec{x} = \begin{bmatrix} -2 \\ 3 \\ 0 \\ 1 \end{bmatrix}$$
+Compute the following $\|\vec{x}\|_2$, $\|\vec{x}\|_1$, and $\|\vec{x}\|_\infty$ for this vector.</p>
+
+<h2>Errors in Gaussian Elimination</h2>
+<p>In the context of solving the matrix equation $A\vec{x} = \vec{b}$, we can compute an approximate solution. Let's call it $\hat{x}$ in what follows.</p>
+<p>Given an approximate solution, we can calculate the relative error in a couple of different ways. We'll be using the $\infty$ norm of the associated matrices.</p>
+<ul>
+  <li><p>Compute the Relative Error directly
+  $$\text{Error} = \dfrac{\|x-\hat{x}\|_\infty}{\|x\|_\infty}$$</p></li>
+  <li><p>Compute the relative residual. The <strong>residual vector</strong> is defined as $r = b - A\hat{x}$. The relative error can then be estimated by $\dfrac{\|r\|_\infty}{\|A\|_\infty \|\hat{x}\|_\infty}$.</p></li>
+</ul>
+<p>Associated with every matrix $A$ is a number called the <strong>condition number</strong>, often denoted as $\kappa(A)$ (that's the Greek letter kappa if you need to know). We're going to investigate how this number relates to the process of solving a matrix equation numerically.</p>
+<p><strong>This next block of code loads the Gaussian Elimination algorithm into our worksheet. Make sure to run it before proceeding.</strong></p>
+
+<!-- ============ CODE CELL 1 ============ -->
+<pre class="ph">Loading Octave cell…</pre>
+<div class="sage"><script type="text/x-sage"># PLEASE RUN THIS CODE BEFORE EXECUTING OTHER PIECES
+function [x, L, U] = GEPP(A,b)
+n = size(A, 2);  %Here we assume that A is  square
+for j=1:(n-1) %Go through columns of A
+[A, p] = sortrows(A, -1); %Apply partial pivoting in descending order
+c = b;
+    for i=1:n
+        b(i) = c(p(i)); %Update the vector b with permutations
+    end
+
+A(j+1:n, j) = A(j+1:n,j)/A(j,j); %Calculate the jth column of L
+A(j+1:n, j+1:n) = A(j+1:n, j+1:n) - A(j+1:n, j)*A(j, j+1:n); %Eliminate
+end
+L = eye(n) + tril(A, -1);
+U = triu(A);
+
+%Forward Substitution to solve Ly=Pb
+for i=1:n %Note: y as a variable is not needed for computation.
+   for j=1:(i-1)
+      b(i) = b(i) - L(i,j)*b(j);
+   end
+end
+
+%Backward Substitution to solve Ux = y
+x = zeros(n,1);
+x(n) = b(n)/U(n,n);
+for i = (n-1):-1:1
+   for j = (i+1):n
+      b(i) = b(i) - U(i,j)*x(j);
+   end
+   x(i) = b(i) / U(i, i);
+end
+
+end
+
+function A = genmat(n, c)
+%
+% Input parameters:
+%
+%   n: Matrix dimension
+%   c: condition no. of A
+%
+% Output :
+%
+%  A: a random matrix with condition number c
+%
+         A = randn(n,n);
+         [U, D, V] = svd(A);
+         for i=0:(n-1)
+           D(i+1,i+1) = c^(-i/(n-1));
+         end
+%
+        A=U*D*V';
+end
+</script></div>
+
+<h2>Example: Hilbert Matrices</h2>
+<p>A <strong>Hilbert Matrix</strong> is a square matrix whose $(i,j)$ entry has the form
+$$H_{ij} = \dfrac{1}{i+j-1}$$</p>
+<p>Note that we can create a Hilbert matrix of any size. The Hilbert matrix of order 5 looks like
+$$H = \begin{bmatrix}
+1 & \frac{1}{2} & \frac{1}{3} & \frac{1}{4} & \frac{1}{5} \\
+\frac{1}{2} & \frac{1}{3} & \frac{1}{4} & \frac{1}{5} & \frac{1}{6} \\
+\frac{1}{3} & \frac{1}{4} & \frac{1}{5} & \frac{1}{6} & \frac{1}{7} \\
+\frac{1}{4} & \frac{1}{5} & \frac{1}{6} & \frac{1}{7} & \frac{1}{8} \\
+\frac{1}{5} & \frac{1}{6} & \frac{1}{7} & \frac{1}{8} & \frac{1}{9}
+\end{bmatrix}$$</p>
+<p>Hilbert matrices are invertible, and there is a shortcut formula to find the inverse based on binomial coefficients. For example, the matrix above has an inverse
+$$H^{-1} = \begin{bmatrix}
+25 & -300 & 1050 & -1400 & 630 \\
+-300 & 4800 & -18900 & 26880 & -12600 \\
+1050 & -18900 & 79380 & -117600 & 56700 \\
+-1400 & 26880 & -117600 & 179200 & -88200 \\
+630 & -12600 & 56700 & -88200 & 44100
+\end{bmatrix}$$</p>
+<p>Let's take a look at solving the problem $H\vec{x} = \vec{b}$ where $\vec{b} = \begin{bmatrix}1 \\ 1 \\ \vdots \\ 1\end{bmatrix}$ for different sizes of Hilbert matrices. This next block of code displays the relative errors associated with the Gaussian Elimination algorithm for the different sizes of $H$.</p>
+
+<!-- ============ CODE CELL 2 ============ -->
+<pre class="ph">Loading Octave cell…</pre>
+<div class="sage"><script type="text/x-sage">fprintf('Hilbert Matrices \n');
+fprintf('---------------- \n');
+fprintf(' n        k(H)       RelErr    RelRes \n');
+for n = [5, 10, 20, 50]
+    H = hilb(n);   %n by n Hilbert Matrix
+    b = ones(n,1);
+    x = invhilb(n)*b; %exact solution Hx=b
+
+    g = GEPP(H,b);    %solution via GEPP
+    xhat = inv(H)*b;  %direct inverse solution
+
+    rG = b - H*g;    %residual for GEPP
+    rI = b - H*xhat; %residual for direct inverse
+
+    normH = norm(H, Inf);  %Infinity norm of H
+    xnorm = norm(x, Inf);  %Infinity norm of x
+    k = normH * norm(invhilb(n), Inf);
+
+    fprintf('%d  & %12d & %12.8f & %12.8f \n', n, k, norm(x-g,Inf)/xnorm, norm(rG, Inf)/(normH*norm(g, Inf)));
+    %fprintf('Inv   %d  & %12d & %12.8f & %12.8f \n', n, k, norm(x-xhat,Inf)/xnorm, norm(rI, Inf)/(normH*norm(xhat,Inf)));
+end
+</script></div>
+
+<h3>Task 3</h3>
+<p>Run the code in the above cell and answer the following questions:</p>
+<ol>
+  <li>Describe the relationship between the size of the Hilbert matrix $H$ and the condition number of the matrix $\kappa(H)$.</li>
+  <li>The RelErr column represents the relative error between the algorithm and the exact answer. How does the error relate to the condition number?</li>
+  <li>What does the value of the relative error when $n=50$ mean about the result of our computation?</li>
+  <li>What else do you notice about the outputs?</li>
+</ol>
+
+<h2>Example: Random Matrices</h2>
+<p>In this example, we are going to restrict ourselves to looking at $20 \times 20$ matrices. The following code will allow us to generate a matrix of random values that has a given condition number.</p>
+<p>Then we will look at the errors of solving $A\vec{x} = \vec{b}$ using the Gaussian Elimination algorithm.</p>
+
+<!-- ============ CODE CELL 3 ============ -->
+<pre class="ph">Loading Octave cell…</pre>
+<div class="sage"><script type="text/x-sage">fprintf('Random Matrices \n');
+fprintf('--------------- \n');
+fprintf(' k(A)             RelErr    RelRes \n');
+for c = [1e1, 1e4, 1e8, 1e12, 1e16]
+   n = 20;
+   A = genmat(n, c);
+   x = rand(n,1);
+   b = A*x;
+
+   g = GEPP(A,b);
+   xhat = inv(A)*b;
+
+   rG = b-A*g;
+   rI = b-A*xhat;
+
+   normA = norm(A, Inf);
+   xnorm = norm(x, Inf);
+
+   fprintf('%5E   & %12.8f & %12.8f \n', c, norm(x-g,Inf)/xnorm, norm(rG, Inf)/(normA*norm(g, Inf)));
+   %fprintf('Inv   %5E   & %12.8f & %12.8f \n', c, norm(x-xhat,Inf)/xnorm, norm(rI, Inf)/(normA*norm(xhat,Inf)));
+end
+</script></div>
+
+<h3>Task 4</h3>
+<p>Run the code in the above cell and answer the following questions:</p>
+<ol>
+  <li>The RelErr column represents the relative error between the algorithm and the exact answer. How does the error relate to the condition number?</li>
+  <li>What does the value of the relative error when $n=50$ mean about the result of our computation?</li>
+  <li>What else do you notice about the outputs?</li>
+</ol>
+
+<h3>There's More to the Story</h3>
+<p>We've taken a look at how the size of the condition number $\kappa(A)$ affects the solution of linear systems. Conceptually we can think of the condition number as a measure of how easy a matrix is to invert. Matrices that are singular have a condition number of $\infty$. As we have seen, invertible matrices have finite condition numbers, but that number can be huge!</p>
+<p>If we think of the set of all matrices and call the set of singular matrices $S$, then the condition number of a matrix is the inverse of the distance from the matrix $A$ to that set.
+$$\text{(Distance from } A \text{ to Singular Matrices)} = \dfrac{1}{\kappa(A)}$$
+That means matrices with high condition numbers are "almost singular."</p>
+<p>So what's going on? Whenever we implement a mathematical problem in a computer, there are tiny approximation errors that occur. In matrices with high condition number, those small errors are amplified so much that we can lose significance in the results. Mathematicians have developed other techniques to work with ill-conditioned matrices to help mitigate this amplification.</p>
+
+<h3>Task 5</h3>
+<p>Answer the following questions:</p>
+<ol>
+  <li>Based on your observations, what does the condition number of a matrix tell you about it?</li>
+  <li>What are three take-aways that you have from this lab (they can be about the experience or the math or both!)?</li>
+</ol>
+
+<script>
+// Lazy-load the (heavy) SageCell client only when the first code cell nears the viewport,
+// so the text and math appear immediately.
+(function () {
+  var cells = document.querySelectorAll('div.sage');
+  var loaded = false;
+
+  function activate() {
+    if (loaded) return;
+    loaded = true;
+    var s = document.createElement('script');
+    s.src = 'https://sagecell.sagemath.org/static/embedded_sagecell.js';
+    s.onload = function () {
+      sagecell.makeSagecell({
+        inputLocation: 'div.sage',
+        linked: true,               // all cells share one Octave session
+        languages: ['octave'],
+        evalButtonText: 'Run',
+        autoeval: false,
+        hide: ['fullScreen', 'permalink']
+      });
+      document.querySelectorAll('pre.ph').forEach(function (p) { p.remove(); });
+    };
+    s.onerror = function () {
+      document.querySelectorAll('pre.ph').forEach(function (p, i) {
+        p.textContent = cells[i].querySelector('script').textContent;
+      });
+    };
+    document.head.appendChild(s);
+  }
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); activate(); }
+    }, { rootMargin: '600px 0px' });
+    cells.forEach(function (c) { io.observe(c); });
+  } else {
+    window.addEventListener('load', activate);
+  }
+})();
+</script>
+</body>
+</html>
