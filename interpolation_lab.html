@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polynomial Bases and Interpolation</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+
+<style>
+  :root { --bg:#fff; --fg:#212121; --muted:#666; --accent:#226e93; --code-bg:#f4f4f4; --border:#ddd; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#16181a; --fg:#e6e6e6; --muted:#9aa; --accent:#6bb7dc; --code-bg:#23272b; --border:#3a3f44; }
+  }
+  html { box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font:16px/1.65 Lato, system-ui, sans-serif;
+         max-width:860px; margin:0 auto; padding:1.5rem 1rem 4rem; }
+  h1,h2,h3 { color:var(--accent); font-weight:400; line-height:1.25; }
+  h1 { font-size:2rem; } h2 { margin-top:2.2rem; } h3 { margin-top:1.6rem; }
+  .sage { margin:1rem 0; }
+  pre.ph { background:var(--code-bg); border:1px solid var(--border); border-radius:4px;
+           padding:.7rem; overflow-x:auto; font-size:.85rem; margin:1rem 0; }
+  .note { color:var(--muted); font-size:.9rem; }
+  .katex-display { overflow-x:auto; overflow-y:hidden; }
+  .sagecell { background:#fff; color:#212121; border-radius:4px; }
+</style>
+</head>
+<body>
+
+<h1>Polynomial Bases and Interpolation</h1>
+<p class="note">Code cells are live (Octave). They load automatically as you scroll to them.</p>
+
+<p>We've seen in our study of vector spaces that there are more vector spaces beyond the standard Euclidean space. We can denote the vector space of polynomials as follows
+$$\mathbb{P}_n = \{a_0 + a_1x + a_2x^2 + \ldots + a_n x^n : a_i \in \mathbb{R}\}$$
+Because this is a vector space of <em>functions</em>, we define operations within the space based on how they affect the input variable(s) to the functions. Here, vector addition and scalar multiplication produce two functions $(f+g)$ and $(\alpha f)$ that are defined by
+$$(f+g)(x) = f(x) + g(x)$$
+$$(\alpha f)(x) = \alpha f(x)$$
+Because we have constant terms in the polynomials, we know that $\dim(\mathbb{P}_n) = n+1$. Like other vector spaces, we can often describe $\mathbb{P}_n$ by a <em>basis</em>, a linearly independent set of vectors that spans the space. Suppose $\mathcal{B} = \{v_0(t), v_1(t), \ldots, v_n(t)\}$ is a set of basis vectors for $\mathbb{P}_n$. Then any polynomial $f(t) \in \mathbb{P}_n$ can be uniquely written as
+$$f(t) = \alpha_0 v_0(t) + \alpha_1 v_1(t) + \ldots + \alpha_n v_n(t)$$</p>
+
+<p>Because this space is finite-dimensional, it's isomorphic to a Euclidean space &mdash; in this case $\mathbb{R}^{n+1}$. This allows us to introduce <strong>coordinate vectors</strong> to represent the elements of the vector space relative to a specified basis. In the example above, the polynomial $f(t)$ can be represented by
+$$[f(t)]_{\mathcal{B}} = \begin{bmatrix} \alpha_0 \\ \alpha_1 \\ \vdots \\ \alpha_n \end{bmatrix}$$
+This relationship allows us to transform certain questions about these more abstract vector spaces into questions about linear systems in Euclidean space.</p>
+
+<h2>Interpolation</h2>
+<p>In many applications we collect data that we assume comes from some underlying function, whether it be position, or velocity, or revenue. If we want to know information from the function outside of our collected data, we often don't have access to the exact answer; we need an approximation. There are two standard approaches to this process &mdash; an approximation or an interpolation. The process of approximation is based on minimizing some error in the data (kind of like the line of best fit or the least squares problem in linear algebra). But we're going to focus on the latter option. The goal of <strong>interpolation</strong> is that, given data points $(x_i, y_i)$ for $i = 0\ldots n$, we find a polynomial of degree $n$, say $p(x)$, such that
+$$p(x_i) = y_i \qquad i = 0, 1, \ldots, n$$
+One assumption here is that none of the $x_i$'s repeat in value; they are all distinct.</p>
+
+<p>Because $p(x) = a_0 + a_1x + \ldots + a_n x^n$, each condition $p(x_i) = y_i$ is a linear equation for the unknown coefficients, which means we can turn this polynomial problem into a linear algebra problem!</p>
+
+<h3>Example</h3>
+<p>Consider the data set
+$$(0, -5),\ (1, -3),\ (-1, -15),\ (2, 39)$$
+The code below will plot the data and the interpolating polynomial. Notice that interpolation is a "connect the dots" approach.</p>
+
+<!-- ============ CODE CELL: plot ============ -->
+<pre class="ph">Loading Octave cell…</pre>
+<div class="sage"><script type="text/x-sage">xData = [0 1 -1 2];
+yData = [-5 -3 -15 39];
+x = linspace(-1.1, 2.5, 1000);
+f = @(t)  -5 + 2*t - 4*t.*(t-1)+ 8*t.*(t-1).*(t+1);
+p = f(x);
+hold all;
+plot(xData, yData, 'r+')
+plot(x, p)
+</script></div>
+
+<h3>Task 1</h3>
+<p>Suppose we have data points $(-2, 3)$, $(1, 5)$, and $(2, 8)$. Write the system of equations corresponding to finding the equation of a parabola that passes through these points. Write the expression in matrix-vector form.</p>
+
+<p>Writing out the equations like we did in Task 1, you can extend the idea to $(n+1)$ data points. This looks like
+$$\begin{bmatrix}
+1 & x_0 & x_0^2 & \cdots & x_0^n \\
+1 & x_1 & x_1^2 & \cdots & x_1^n \\
+\vdots & \vdots & \vdots & & \vdots \\
+1 & x_n & x_n^2 & \cdots & x_n^n
+\end{bmatrix}
+\begin{bmatrix} a_0 \\ a_1 \\ \vdots \\ a_n \end{bmatrix}
+=
+\begin{bmatrix} y_0 \\ y_1 \\ \vdots \\ y_n \end{bmatrix}$$
+This matrix has a fancier name: it's a <strong>Vandermonde Matrix</strong>. As long as the $x_i$'s are distinct, the matrix is invertible. For the data in Task 1, the corresponding interpolating polynomial is
+$$f(x) = \dfrac{19}{6} + \dfrac{5}{4}x + \dfrac{7}{12}x^2$$</p>
+
+<h3>Task 2</h3>
+<p>Execute the code below to build a Vandermonde matrix corresponding to the following $x$-values.
+$$-1 \quad 1 \quad 3 \quad 7 \quad 10 \quad 22 \quad -5 \quad 30 \quad -26$$
+The code looks at the condition numbers of different Vandermonde matrices corresponding to the points $x_0$ to $x_n$ for the values of $n$. Answer the following questions.</p>
+<ol>
+  <li>What do you notice about the condition numbers?</li>
+  <li>Based on what you know about condition numbers, can we solve this system easily?</li>
+</ol>
+
+<!-- ============ CODE CELL: Vandermonde ============ -->
+<pre class="ph">Loading Octave cell…</pre>
+<div class="sage"><script type="text/x-sage">V = [[1 -1 1 -1 1 -1 1 -1 1];[1 1 1 1 1 1 1 1 1]; [1 3 9 27 81 243 3^6 3^7 3^8]; [1 7 49 7^3 7^4 7^5 7^6 7^7 7^8];[1 10 100 1000 10000 100000 10^6 10^7 10^8];[1 22 22^2 22^3 22^4 22^5 22^6 22^7 22^8];[1 -5 25 -125 625 -5^5 5^6 -5^7 5^8];[1 30 30^2 30^3 30^4 30^5 30^6 30^7 30^8]; [1 -26 26^2 -26^3 26^4 -26^5 26^6 -26^7 26^8]];
+fprintf('n  k(V)\n')
+for i=2:9
+    fprintf("%d %8.5f \n", i, cond(V(1:i, 1:i)))
+end
+</script></div>
+
+<h2>Change of Basis</h2>
+<p>Instead of using the basis $\mathcal{B}$, we can introduce a new basis to reframe the interpolation problem. For convenience, let's consider the space $\mathbb{P}_2$, and the standard basis $\mathcal{B} = \{1, x, x^2\}$. We can find another basis as:
+$$\mathcal{L} = \left\lbrace \dfrac{1}{3}(x^2 - 4x + 3),\ -\dfrac{1}{2}(x^2 - 3x),\ \dfrac{1}{6}(x^2 - x) \right\rbrace$$</p>
+<p>How do we know if this is actually a basis? You take the representation of each of the vectors in $\mathcal{L}$ in terms of the coordinate vectors of $\mathcal{B}$ and make a matrix out of it. That gives us:
+$$L = \begin{bmatrix}
+1 & 0 & 0 \\
+-\dfrac{4}{3} & \dfrac{3}{2} & -\dfrac{1}{6} \\
+\dfrac{1}{3} & -\dfrac{1}{2} & \dfrac{1}{6}
+\end{bmatrix}$$
+If the matrix $L$ is invertible, then the elements of $\mathcal{L}$ form a basis.</p>
+
+<h3>Task 3</h3>
+<ol>
+  <li>Show that the matrix $L$ above is indeed invertible.</li>
+  <li>Recall that the coordinate representation of a vector in terms of $\mathcal{L}$ can be found by:
+  $$L[f(t)]_{\mathcal{L}} = [f(t)]_{\mathcal{B}}.$$
+  Find the representation of the polynomial $g(x) = 5x^2 - 6x + 8$ in terms of the basis $\mathcal{L}$.</li>
+</ol>
+
+<h2>Cardinal Polynomials</h2>
+<p>Given a data set $\{(x_0, y_0), (x_1, y_1), \ldots, (x_n, y_n)\}$, we can define the $j$th <strong>cardinal polynomial</strong> as:
+$$\ell_j(x) = \prod_{\substack{i=0 \\ i \neq j}}^{n} \left(\dfrac{x - x_i}{x_j - x_i}\right)$$
+This formula looks a little confusing, but let's look at an example of it for $n = 2$.
+$$\ell_0(x) = \dfrac{(x-x_1)(x-x_2)}{(x_0-x_1)(x_0-x_2)}$$
+$$\ell_1(x) = \dfrac{(x-x_0)(x-x_2)}{(x_1-x_0)(x_1-x_2)}$$
+$$\ell_2(x) = \dfrac{(x-x_0)(x-x_1)}{(x_2-x_0)(x_2-x_1)}$$</p>
+<p>It turns out that these cardinal polynomials form a new basis $\mathcal{L}$, sometimes called the <em>Lagrange Basis</em>.</p>
+
+<h3>Task 4</h3>
+<p>Let's revisit the example from Task 1 with data points $(-2, 3)$, $(1, 5)$, and $(2, 8)$.</p>
+<ol>
+  <li>Construct the cardinal polynomials $\ell_0(x)$, $\ell_1(x)$, and $\ell_2(x)$. (Hint: the formulas are right above the task!)</li>
+  <li>Based on the cardinal polynomials, create the change of basis matrix $L$ for the basis $\mathcal{L} = \{\ell_0, \ell_1, \ell_2\}$.</li>
+  <li>Recall that the interpolating polynomial for this data set is $f(x) = \dfrac{19}{6} + \dfrac{5}{4}x + \dfrac{7}{12}x^2$. Find the coordinate representation of $f$ with respect to $\mathcal{L}$ (that is, find $[f(x)]_\mathcal{L}$). What do you notice about this vector?</li>
+</ol>
+
+<p>The ideas of interpolating polynomials are used to develop numerical integration rules, which can then be adapted for many tasks ranging from approximating area to solving differential equations! And behind all of it is the structure of vector spaces!</p>
+
+<script>
+// Lazy-load the SageCell client only when the first code cell nears the viewport.
+(function () {
+  var cells = document.querySelectorAll('div.sage');
+  var loaded = false;
+
+  function activate() {
+    if (loaded) return;
+    loaded = true;
+    var s = document.createElement('script');
+    s.src = 'https://sagecell.sagemath.org/static/embedded_sagecell.js';
+    s.onload = function () {
+      sagecell.makeSagecell({
+        inputLocation: 'div.sage',
+        linked: true,
+        languages: ['octave'],
+        evalButtonText: 'Run',
+        autoeval: false,
+        hide: ['fullScreen', 'permalink']
+      });
+      document.querySelectorAll('pre.ph').forEach(function (p) { p.remove(); });
+    };
+    s.onerror = function () {
+      document.querySelectorAll('pre.ph').forEach(function (p, i) {
+        p.textContent = cells[i].querySelector('script').textContent;
+      });
+    };
+    document.head.appendChild(s);
+  }
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; })) { io.disconnect(); activate(); }
+    }, { rootMargin: '600px 0px' });
+    cells.forEach(function (c) { io.observe(c); });
+  } else {
+    window.addEventListener('load', activate);
+  }
+})();
+</script>
+</body>
+</html>
