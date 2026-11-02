@@ -56,9 +56,22 @@ One assumption here is that none of the $x_i$'s repeat in value; they are all di
 <p>Consider the data set
 $$(0, -5),\ (1, -3),\ (-1, -15),\ (2, 39)$$
 The code below will plot the data and the interpolating polynomial. Notice that interpolation is a "connect the dots" approach.</p>
-
 <!-- ============ CODE CELL: plot ============ -->
-<pre class="ph">Loading Octave cell…</pre>
+<pre class="ph">Loading Sage cell…</pre>
+<div class="sage"><script type="text/x-sage">
+# Python/Sage version of the interpolation example
+xData = [0, 1, -1, 2]
+yData = [-5, -3, -15, 39]
+
+x = var('x')
+f = -5 + 2*x - 4*x*(x - 1) + 8*x*(x - 1)*(x + 1)
+
+pts = list(zip(xData, yData))
+graph = points(pts, color='red', pointsize=30) + plot(f, (x, -1.1, 2.5), color='blue')
+graph.show()
+</script></div>
+<!-- ============ CODE CELL: plot ============ -->
+<!-- <pre class="ph">Loading Octave cell…</pre>
 <div class="sage"><script type="text/x-sage">
 graphics_toolkit('gnuplot');
 set(0, 'defaultfigurevisible', 'off');
@@ -76,7 +89,7 @@ plot(x, p);
 hold off;
 print('plot.svg', '-dsvg');
 </script></div>
-
+-->
 <h3>Task 1</h3>
 <p>Suppose we have data points $(-2, 3)$, $(1, 5)$, and $(2, 8)$. Write the system of equations corresponding to finding the equation of a parabola that passes through these points. Write the expression in matrix-vector form.</p>
 
