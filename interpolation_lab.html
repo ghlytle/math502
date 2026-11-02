@@ -60,17 +60,21 @@ The code below will plot the data and the interpolating polynomial. Notice that 
 <!-- ============ CODE CELL: plot ============ -->
 <pre class="ph">Loading Octave cell…</pre>
 <div class="sage"><script type="text/x-sage">
-  graphics_toolkit('gnuplot');
+graphics_toolkit('gnuplot');
 set(0, 'defaultfigurevisible', 'off');
+set(0, 'defaulttextinterpreter', 'none');
+set(0, 'defaultaxesfontname', '');
+set(0, 'defaulttextfontname', '');
   xData = [0 1 -1 2];
 yData = [-5 -3 -15 39];
 x = linspace(-1.1, 2.5, 1000);
 f = @(t)  -5 + 2*t - 4*t.*(t-1)+ 8*t.*(t-1).*(t+1);
 p = f(x);
-hold all;
 plot(xData, yData, 'r+');
+hold on;
 plot(x, p);
-  print('plot.png', '-dpng', '-nofonts');
+hold off;
+print('plot.svg', '-dsvg');
 </script></div>
 
 <h3>Task 1</h3>
