@@ -68,9 +68,9 @@ x = linspace(-1.1, 2.5, 1000);
 f = @(t)  -5 + 2*t - 4*t.*(t-1)+ 8*t.*(t-1).*(t+1);
 p = f(x);
 hold all;
-plot(xData, yData, 'r+')
-plot(x, p)
-  print('plot.png', '-dpng');
+plot(xData, yData, 'r+');
+plot(x, p);
+  print('plot.png', '-dpng', '-nofonts');
 </script></div>
 
 <h3>Task 1</h3>
